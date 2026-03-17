@@ -1,0 +1,80 @@
+const C=document.getElementById('gc'),X=C.getContext('2d');
+const ST={TITLE:'title',SELECT:'select',PLAYING:'playing'};
+let state=ST.TITLE,selectedChar=null,player=null,enemies=[],effects=[],combo=0,lastAttack=0,wave=1,score=0,difficulty=1;
+const keys={};
+document.addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys[k]=true;if(k===' ')keys.space=true;if(['w','a','s','d','j','k','l','1','2','3'].includes(k))A.i()});
+document.addEventListener('keyup',e=>{const k=e.key.toLowerCase();if(k===' ')keys.space=false;keys[k]=false});
+C.addEventListener('touchstart',e=>{e.preventDefault();if(state!==ST.PLAYING)return;const t=e.touches[0],r=C.getBoundingClientRect(),x=(t.clientX-r.left)/r.width*1600,y=(t.clientY-r.top)/r.height*900;if(x<500)keys.a=true;else if(x>1100)keys.d=true;else if(y<250)keys.w=true;else if(y>650)keys.s=true;else keys.j=true;A.i()});
+C.addEventListener('touchmove',e=>{e.preventDefault();if(state!==ST.PLAYING)return;const t=e.touches[0],r=C.getBoundingClientRect(),x=(t.clientX-r.left)/r.width*1600;keys={};if(x<500)keys.a=true;else if(x>1100)keys.d=true;else keys.j=true});
+C.addEventListener('touchend',e=>{keys={}});
+const chars=[{id:'liubei',n:'刘备',r:'均衡',w:'双股剑',h:100,a:15,sp:4,c:'#4a90d9',u:'仁德天下',art:'⚔️'},{id:'guanyu',n:'关羽',r:'力量',w:'青龙偃月刀',h:120,a:20,sp:3,c:'#2e8b57',u:'青龙斩',art:'🐲'},{id:'zhangfei',n:'张飞',r:'爆发',w:'丈八蛇矛',h:110,a:22,sp:3.5,c:'#6b5b95',u:'燕人咆哮',art:'🦅'},{id:'zhugeliang',n:'诸葛亮',r:'远程',w:'羽扇',h:80,a:25,sp:3,c:'#88b04b',u:'借东风',art:'🪷'},{id:'caocao',n:'曹操',r:'全能',w:'倚天剑',h:100,a:18,sp:4,c:'#c41e3a',u:'挟天子令',art:'👑'},{id:'sunquann',n:'孙权',r:'技巧',w:'古锭刀',h:95,a:17,sp:4.5,c:'#00a86b',u:'江东猛虎',art:'🐯'},{id:'zhouyu',n:'周瑜',r:'策略',w:'紫电剑',h:90,a:24,sp:4.2,c:'#9b59b6',u:'火烧赤壁',art:'🔥'},{id:'huangai',n:'黄盖',r:'坦克',w:'铁鞭',h:140,a:16,sp:2.5,c:'#cd853f',u:'苦肉计',art:'⚔️'},{id:'lvbu',n:'吕布',r:'无双',w:'方天画戟',h:160,a:30,sp:4.8,c:'#8b0000',u:'无双乱舞',art:'💀'}];
+function roundRect(x,y,w,h,r){if(X.roundRect){X.beginPath();X.roundRect(x,y,w,h,r);X.fill()}else{X.beginPath();X.moveTo(x+r,y);X.lineTo(x+w-r,y);X.quadraticCurveTo(x+w,y,x+w,y+r);X.lineTo(x+w,y+h-r);X.quadraticCurveTo(x+w,y+h,x+w-r,y+h);X.lineTo(x+r,y+h);X.quadraticCurveTo(x,y+h,x,y+h-r);X.lineTo(x,y+r);X.quadraticCurveTo(x,y,x+r,y);X.fill()}}
+function createScene(){const c=document.createElement('canvas');c.width=1600;c.height=900;const x=c.getContext('2d');const g=x.createLinearGradient(0,0,0,450);g.addColorStop(0,'#0a0a1a');g.addColorStop(0.3,'#1a1a3a');g.addColorStop(0.6,'#2d1b4e');g.addColorStop(1,'#4a2c6e');x.fillStyle=g;x.fillRect(0,0,1600,900);x.fillStyle='#f4e4a6';x.shadowColor='#f4e4a6';x.shadowBlur=100;x.beginPath();x.arc(1400,120,70,0,7);x.fill();x.shadowBlur=0;x.fillStyle='#0a0a15';x.beginPath();x.moveTo(0,420);x.lineTo(250,300);x.lineTo(500,380);x.lineTo(750,260);x.lineTo(1000,320);x.lineTo(1250,260);x.lineTo(1600,350);x.lineTo(1600,900);x.lineTo(0,900);x.fill();x.fillStyle='#1a1a28';x.beginPath();x.moveTo(0,520);x.lineTo(300,420);x.lineTo(600,480);x.lineTo(900,380);x.lineTo(1200,440);x.lineTo(1600,400);x.lineTo(1600,900);x.lineTo(0,900);x.fill();x.fillStyle='#080810';x.fillRect(0,620,1600,280);for(let i=0;i<80;i++){x.fillStyle='rgba(255,'+(80+Math.random()*120)+',0,'+(Math.random()*0.4)+')';x.beginPath();x.arc(Math.random()*1600,640+Math.random()*220,4+Math.random()*10,0,7);x.fill()}return c;}
+let bg=createScene();
+
+// 西游记妖怪绘制
+function drawMonster(type, ctx, attacking) {
+    if (type === 'bull') { // 牛魔王
+        ctx.fillStyle = '#8B4513';
+        ctx.beginPath();ctx.ellipse(0,10,45,50,0,0,7);ctx.fill();
+        ctx.fillStyle = '#654321';
+        ctx.beginPath();ctx.moveTo(-35,-20);ctx.quadraticCurveTo(-50,-50,-30,-60);ctx.quadraticCurveTo(-25,-40,-25,-25);ctx.fill();
+        ctx.beginPath();ctx.moveTo(35,-20);ctx.quadraticCurveTo(50,-50,30,-60);ctx.quadraticCurveTo(25,-40,25,-25);ctx.fill();
+        ctx.fillStyle = attacking ? '#FF0000' : '#FFFF00';
+        ctx.beginPath();ctx.arc(-15,0,10,0,7);ctx.arc(15,0,10,0,7);ctx.fill();
+    }
+    else if (type === 'spider') { // 蜘蛛精
+        ctx.fillStyle = '#1a0a0a';
+        ctx.beginPath();ctx.ellipse(0,10,35,40,0,0,7);ctx.fill();
+        ctx.fillStyle = attacking ? '#FF0000' : '#00FF00';
+        ctx.beginPath();ctx.arc(-12,-5,8,0,7);ctx.arc(12,-5,8,0,7);ctx.fill();
+        ctx.fillStyle = '#FFFF00';
+        ctx.beginPath();ctx.moveTo(-8,25);ctx.lineTo(-5,35);ctx.lineTo(-2,25);ctx.fill();
+        ctx.beginPath();ctx.moveTo(8,25);ctx.lineTo(5,35);ctx.lineTo(2,25);ctx.fill();
+    }
+    else if (type === 'snake') { // 蛇精
+        ctx.fillStyle = '#228B22';
+        ctx.beginPath();ctx.ellipse(0,15,30,45,0,0,7);ctx.fill();
+        ctx.fillStyle = '#FF4500';
+        ctx.beginPath();ctx.moveTo(-10,-25);ctx.lineTo(0,-45);ctx.lineTo(10,-25);ctx.fill();
+        ctx.fillStyle = attacking ? '#FF0000' : '#FFD700';
+        ctx.beginPath();ctx.arc(-10,0,7,0,7);ctx.arc(10,0,7,0,7);ctx.fill();
+    }
+    else if (type === 'demon') { // 夜叉怪
+        ctx.fillStyle = '#4169E1';
+        ctx.beginPath();ctx.ellipse(0,10,40,45,0,0,7);ctx.fill();
+        ctx.fillStyle = '#000080';
+        ctx.beginPath();ctx.moveTo(-30,-30);ctx.quadraticCurveTo(0,-50,30,-30);ctx.lineTo(25,-10);ctx.lineTo(-25,-10);ctx.fill();
+        ctx.fillStyle = attacking ? '#FF0000' : '#00FFFF';
+        ctx.beginPath();ctx.arc(-12,-5,8,0,7);ctx.arc(12,-5,8,0,7);ctx.fill();
+    }
+    else if (type === 'tiger') { // 虎力大仙
+        ctx.fillStyle = '#FF8C00';
+        ctx.beginPath();ctx.ellipse(0,10,42,48,0,0,7);ctx.fill();
+        ctx.strokeStyle = '#000000';ctx.lineWidth=3;
+        ctx.beginPath();ctx.moveTo(-15,-20);ctx.lineTo(15,-20);ctx.moveTo(0,-25);ctx.lineTo(0,-15);ctx.moveTo(-10,-22);ctx.lineTo(-10,-18);ctx.moveTo(10,-22);ctx.lineTo(10,-18);ctx.stroke();
+        ctx.fillStyle = attacking ? '#FF0000' : '#FFFF00';
+        ctx.beginPath();ctx.arc(-14,-2,9,0,7);ctx.arc(14,-2,9,0,7);ctx.fill();
+    }
+    else if (type === 'fish') { // 鲤鱼精
+        ctx.fillStyle = '#FF69B4';
+        ctx.beginPath();ctx.ellipse(0,10,35,42,0,0,7);ctx.fill();
+        ctx.fillStyle = '#FFB6C1';
+        for(let i=0;i<5;i++){ctx.beginPath();ctx.arc(-15+i*8,15,5,0,7);ctx.fill()}
+        ctx.fillStyle = attacking ? '#FF0000' : '#FFFFFF';
+        ctx.beginPath();ctx.arc(-10,-5,7,0,7);ctx.arc(10,-5,7,0,7);ctx.fill();
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();ctx.arc(-10,-5,3,0,7);ctx.arc(10,-5,3,0,7);ctx.fill();
+    }
+    else if (type === 'dragon') { // 龙王
+        ctx.fillStyle = '#4B0082';
+        ctx.beginPath();ctx.ellipse(0,10,40,45,0,0,7);ctx.fill();
+        ctx.fillStyle = '#FFD700';
+        ctx.beginPath();ctx.moveTo(-25,-25);ctx.lineTo(-35,-50);ctx.lineTo(-15,-35);ctx.fill();
+        ctx.beginPath();ctx.moveTo(25,-25);ctx.lineTo(35,-50);ctx.lineTo(15,-35);ctx.fill();
+        ctx.fillStyle = attacking ? '#FF0000' : '#FFD700';
+        ctx.beginPath();ctx.arc(-12,-3,8,0,7);ctx.arc(12,-3,8,0,7);ctx.fill();
+    }
+    else if (type === 'scorpion') { // 蝎子精
+        ctx.fillStyle = '#8B0000';
+        ctx.beginPath();ctx.ellipse(0,15,32,38,0,0,7);ctx.fill();

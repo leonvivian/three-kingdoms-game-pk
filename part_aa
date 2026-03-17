@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>三国志：英雄觉醒 V1.4 - 赤壁之战</title>
+<style><style>
+@import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--gold:#d4af37;--red:#c41e3a;--jade:#00a86b;--purple:#9b59b6;--cream:#faf0e6}
+html,body{width:100%;height:100%;overflow:hidden;touch-action:none;-webkit-touch-callout:none;user-select:none;background:#0a0a15}
+#c{width:100%;height:100%;position:relative;overflow:hidden;background:#0f0f1a}
+canvas{width:100%;height:100%;display:block}
+.s{position:fixed;top:0;left:0;width:100%;height:100%;display:none;flex-direction:column;justify-content:center;align-items:center;z-index:100;background:linear-gradient(180deg,#0a0a1a,#2d1b4e)}
+.s.active{display:flex}
+h1{font-family:'Ma Shan Zheng',cursive;font-size:clamp(50px,18vw,120px);color:var(--gold);text-shadow:0 0 30px var(--gold)}
+h2{font-size:clamp(14px,4vw,32px);color:var(--cream);letter-spacing:clamp(4px,2vw,30px);margin-top:10px}
+.badge{font-family:'Ma Shan Zheng',cursive;font-size:clamp(12px,3vw,24px);color:var(--red);margin-top:15px;padding:5px 20px;border:2px solid var(--red);border-radius:20px}
+.btn{margin-top:20px;padding:12px 40px;font-family:'Ma Shan Zheng',cursive;font-size:clamp(20px,4vw,36px);color:var(--gold);background:linear-gradient(180deg,var(--red),#8b0000);border:3px solid var(--gold);border-radius:12px}
+.grid{display:flex;gap:8px;flex-wrap:wrap;max-width:95vw;justify-content:center}
+.card{width:clamp(70px,22vw,140px);padding:6px;background:linear-gradient(170deg,rgba(50,30,95,0.95),rgba(22,22,48,0.98));border:2px solid rgba(212,175,55,0.35);border-radius:12px;text-align:center;position:relative}
+.card.sel{border-color:var(--jade);box-shadow:0 0 30px rgba(0,168,107,0.6)}
+.port{width:clamp(55px,18vw,120px);height:clamp(65px,20vw,130px);margin:0 auto 5px;border-radius:8px;background:linear-gradient(180deg,var(--c),#1a1a2e);position:relative}
+.port .art{position:absolute;bottom:3px;left:50%;transform:translateX(-50%);font-size:clamp(22px,5vw,36px)}
+.n{font-family:'Ma Shan Zheng',cursive;font-size:clamp(14px,3vw,24px);color:var(--gold)}
+.r{font-size:clamp(8px,2vw,10px);color:var(--cream);opacity:0.7}
+.hud{position:fixed;top:0;left:0;right:0;padding:8px 10px;display:none;justify-content:space-between;background:linear-gradient(180deg,rgba(0,0,0,0.85),transparent);z-index:50}
+.hud.active{display:flex}
+.pi{display:flex;align-items:center;gap:6px}
+.ava{width:clamp(30px,8vw,36px);height:clamp(30px,8vw,36px);border-radius:50%;border:2px solid var(--gold);background:var(--c,#4a90d9)}
+.pn{font-family:'Ma Shan Zheng',cursive;font-size:clamp(14px,3.5vw,18px);color:var(--gold)}
+.hb{width:clamp(70px,20vw,140px);height:10px;background:rgba(0,0,0,0.85);border:2px solid var(--gold);border-radius:5px;position:relative}
+.hf{height:100%;background:linear-gradient(90deg,#f13,#f55)}
+.ht{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:6px;color:#fff}
+.eb{width:clamp(50px,15vw,90px);height:6px;background:rgba(0,0,0,0.85);border:1px solid var(--purple);border-radius:3px;margin-top:2px}
+.ef{height:100%;background:linear-gradient(90deg,#95b,#b7d)}
+.sp{text-align:right}
+.sd{font-family:'Ma Shan Zheng',cursive;font-size:clamp(12px,3vw,16px);color:var(--gold)}
+.wd{font-size:clamp(9px,2.5vw,11px);color:var(--cream)}
+.ult{position:fixed;top:60px;left:50%;transform:translateX(-50%);font-family:'Ma Shan Zheng',cursive;font-size:clamp(14px,3.5vw,22px);color:var(--purple);text-shadow:0 0 12px var(--purple);animation:up 1s infinite;opacity:0;z-index:60}
+.ult.show{opacity:1}
+@keyframes up{0%,100%{transform:translateX(-50%)scale(1)}50%{transform:translateX(-50%)scale(1.1)}}
+.com{position:fixed;top:60px;right:15px;font-family:'Ma Shan Zheng',cursive;font-size:clamp(20px,5vw,42px);color:var(--red);text-shadow:0 0 15px var(--red);opacity:0;transform:scale(0.2);transition:all 0.3s;z-index:60}
+.com.show{opacity:1;transform:scale(1)}
+.sb{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:50}
+.si{width:clamp(36px,10vw,42px);height:clamp(36px,10vw,42px);background:linear-gradient(165deg,rgba(45,27,95,0.98),rgba(18,18,48,0.99));border:2px solid var(--gold);border-radius:8px;display:flex;justify-content:center;align-items:center;font-size:clamp(12px,3.5vw,16px);position:relative}
+.si.cd{opacity:0.5}
+.si.ut{border-color:var(--purple)}
+.si.ut.rdy{animation:ui 1s infinite}
+@keyframes ui{0%,100%{box-shadow:0 0 10px rgba(155,89,182,0.5)}50%{box-shadow:0 0 20px rgba(155,89,182,0.8)}}
+.k{position:absolute;bottom:-10px;font-size:7px;color:var(--gold)}
+.co{position:absolute;bottom:0;left:0;right:0;height:0;background:rgba(0,0,0,0.85)}
+.back{position:fixed;top:8px;right:8px;padding:6px 12px;font-family:'Ma Shan Zheng',cursive;font-size:clamp(12px,3vw,16px);color:var(--gold);background:rgba(0,0,0,0.7);border:1px solid rgba(212,175,55,0.5);border-radius:6px;z-index:200}
+.controls{position:fixed;bottom:0;left:0;right:0;height:38%;pointer-events:none;z-index:100}
+.joystick{position:absolute;bottom:26%;left:4%;width:18vw;height:18vw;max-width:95px;max-height:95px;pointer-events:auto}
+.joystick-base{width:100%;height:100%;background:rgba(255,255,255,0.1);border:2px solid rgba(212,175,55,0.4);border-radius:50%}
+.joystick-stick{width:35%;height:35%;background:linear-gradient(135deg,#d4af37,#b8860b);border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+.action-btns{position:absolute;bottom:20%;right:4%;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:auto}
+.btn-row{display:flex;gap:6px}
+.btn-skill{width:8vw;height:8vw;max-width:40px;max-height:40px;background:linear-gradient(165deg,rgba(45,27,95,0.95),rgba(18,18,48,0.95));border:2px solid #d4af37;border-radius:8px;display:flex;justify-content:center;align-items:center;font-size:clamp(14px,4vw,18px);color:#d4af37;font-weight:bold}
+.btn-ult{width:9vw;height:9vw;max-width:42px;max-height:42px;background:linear-gradient(135deg,#9b59b6,#6b3483);border:2px solid #ffd700;border-radius:8px;display:flex;justify-content:center;align-items:center;font-size:clamp(14px,4vw,18px);color:#ffd700}
+.btn-atk{width:14vw;height:14vw;max-width:65px;max-height:65px;background:linear-gradient(135deg,#c41e3a,#8b0000);border:2px solid #d4af37;border-radius:50%;display:flex;justify-content:center;align-items:center;font-size:clamp(20px,5vw,28px);color:#d4af37;font-weight:bold}
+</style></style>
+</head>
+<body>
+<div id="c"><canvas id="gc" width="1600" height="900"></canvas>
+<div class="s t active" id="ts"><h1>三国志</h1><h2>英 雄 觉 醒</h2><div class="badge">🔥 赤壁之战</div><button class="btn" id="start">开始游戏</button><div class="ver">V1.4.1 | Leon<br>108705221@qq.com</div></div>
+<div class="s" id="cs"><h2 style="margin-bottom:15px">选择你的武将</h2><div class="grid" id="grid"></div><button class="btn" id="confirm">确认出击</button></div>
+<div class="hud" id="hud">
+<div class="top"><div class="pi"><div class="ava" id="ava"></div><div><span class="pn" id="pn">刘备</span><div class="hb"><div class="hf" id="hf" style="width:100%"></div><span class="ht" id="ht">100/100</span></div><div class="eb"><div class="ef" id="ef" style="width:0%"></div></div></div><div class="sp"><div class="sd">得分：<span id="sc">0</span></div><div class="wd">波次：<span id="wv">1</span> | 难度：<span id="diff">1</span></div></div></div>
+<div class="ult" id="ult">💫 必杀技就绪！按 K</div>
+<div class="com" id="com">连击 0</div>
+<div class="ch">移动:WASD | 攻击:J | 跳跃:空格 | 技能:1-3 | 必杀:K | 格挡:L</div>
+<div class="sb"><div class="si" id="s1">🔥<span class="k">1</span><div class="co"></div></div><div class="si" id="s2">⚡<span class="k">2</span><div class="co"></div></div><div class="si" id="s3">🛡️<span class="k">3</span><div class="co"></div></div><div class="si ut" id="s4">💥<span class="k">K</span><div class="co"></div></div></div>
+<button class="bb" id="back">返回</button>
+</div>
+</div>
+<script>
+const A={ctx:null,i(){if(!this.ctx)try{this.ctx=new(window.AudioContext||window.webkitAudioContext)}catch(e){}},p(f,d,t,v){if(!this.ctx)return;const o=this.ctx.createOscillator(),g=this.ctx.createGain();o.type=t||'sine';o.frequency.value=f;g.gain.setValueAtTime(v||0.2,this.ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,this.ctx.currentTime+d);o.connect(g);g.connect(this.ctx.destination);o.start();o.stop(this.ctx.currentTime+d)},h(){this.p(220,.07,'square',.1)},sk(){this.p(440,.12,.1,.1);this.p(550,.15,.08,.08)},u(){[200,300,400,500,600,700].forEach((f,i)=>setTimeout(()=>this.p(f,.15,'sawtooth',.15),i*80))},he(){this.p(660,.08,.06,.06);setTimeout(()=>this.p(880,.2,.04,.04),80)},th(){this.p(100,.12,'sawtooth',.18);setTimeout(()=>this.p(70,.18,'sawtooth',.22),60)},c(){this.p(350+Math.min(combo,10)*25,.08,.06,.06)},e(){this.p(150,.1,'sawtooth',.15);setTimeout(()=>this.p(120,.15,'sawtooth',.2),50)}};
